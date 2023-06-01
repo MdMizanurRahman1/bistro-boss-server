@@ -31,16 +31,45 @@ async function run() {
         await client.connect();
 
 
+        const usersCollection = client.db("bistroDB").collection("users");
         const menuCollection = client.db("bistroDB").collection("menu");
         const reviewCollection = client.db("bistroDB").collection("reviews");
         const cartCollection = client.db("bistroDB").collection("carts");
 
+        // users related apis
+        app.get('/users', async (req, res) => {
+            const result = await usersCollection.find().toArray();
+            res.send(result)
+        })
 
+
+
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const query = { email: user.email }
+            const existingUser = await usersCollection.findOne(query)
+            if (existingUser) {
+                return res.send({ message: 'user already exista' })
+            }
+            const result = await usersCollection.insertOne(user);
+            res.send(result)
+        })
+
+
+
+
+
+
+
+        // menu related apis
         app.get('/menu', async (req, res) => {
             const result = await menuCollection.find().toArray();
             res.send(result)
         })
 
+
+        // review related apis
         app.get('/reviews', async (req, res) => {
             const result = await reviewCollection.find().toArray();
             res.send(result)
@@ -49,7 +78,6 @@ async function run() {
 
 
         // cart collection apis
-
         app.get('/carts', async (req, res) => {
             const email = req.query.email;
             if (!email) {
@@ -59,7 +87,6 @@ async function run() {
             const result = await cartCollection.find(query).toArray();
             res.send(result)
         })
-
 
         app.post('/carts', async (req, res) => {
             const item = req.body;
